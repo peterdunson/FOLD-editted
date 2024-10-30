@@ -36,28 +36,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// makeHellingerAvg
-arma::vec makeHellingerAvg(arma::cube theta, int d, int n);
-RcppExport SEXP _foldcluster_makeHellingerAvg(SEXP thetaSEXP, SEXP dSEXP, SEXP nSEXP) {
+// makeJensenShannonAvg
+arma::vec makeJensenShannonAvg(arma::cube theta, int d, int n);
+RcppExport SEXP _foldcluster_makeJensenShannonAvg(SEXP thetaSEXP, SEXP dSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::cube >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(makeHellingerAvg(theta, d, n));
+    rcpp_result_gen = Rcpp::wrap(makeJensenShannonAvg(theta, d, n));
     return rcpp_result_gen;
 END_RCPP
 }
-// makeuHellingerAvg
-arma::vec makeuHellingerAvg(arma::cube theta, int n);
-RcppExport SEXP _foldcluster_makeuHellingerAvg(SEXP thetaSEXP, SEXP nSEXP) {
+// makeuJensenShannonAvg
+arma::vec makeuJensenShannonAvg(arma::cube theta, int n);
+RcppExport SEXP _foldcluster_makeuJensenShannonAvg(SEXP thetaSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::cube >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(makeuHellingerAvg(theta, n));
+    rcpp_result_gen = Rcpp::wrap(makeuJensenShannonAvg(theta, n));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -98,25 +98,6 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(minimize_risk_cpp(c, Delta, omega));
     return rcpp_result_gen;
 END_RCPP
-}
-// makeJensenShannonAvg
-arma::vec makeJensenShannonAvg(arma::cube theta, int d, int n) {
-    arma::vec jsd_values(n);
-    
-    for (int i = 0; i < n; ++i) {
-        arma::vec P = theta.slice(i).col(0);
-        arma::vec Q = theta.slice(i).col(1);
-        
-        P = P / arma::accu(P);
-        Q = Q / arma::accu(Q);
-        arma::vec M = 0.5 * (P + Q);
-
-        double KLD_PM = arma::accu(P % (arma::log(P + 1e-10) - arma::log(M + 1e-10)));
-        double KLD_QM = arma::accu(Q % (arma::log(Q + 1e-10) - arma::log(M + 1e-10)));
-        jsd_values(i) = 0.5 * (KLD_PM + KLD_QM);
-    }
-    
-    return jsd_values;
 }
 // ldmvnorm_arma
 double ldmvnorm_arma(arma::vec y, arma::vec mu, arma::mat Sigma, int d);
@@ -173,17 +154,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-RcppExport SEXP _foldcluster_makeJensenShannonAvg(SEXP thetaSEXP, SEXP dSEXP, SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::cube >::type theta(thetaSEXP);
-    Rcpp::traits::input_parameter< int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(makeJensenShannonAvg(theta, d, n));
-    return rcpp_result_gen;
-END_RCPP
-}
 // lmaketau
 arma::mat lmaketau(arma::vec Pi, arma::mat y, arma::mat mu, arma::mat Sigma);
 RcppExport SEXP _foldcluster_lmaketau(SEXP PiSEXP, SEXP ySEXP, SEXP muSEXP, SEXP SigmaSEXP) {
@@ -202,8 +172,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_foldcluster_mnorm_D_arma", (DL_FUNC) &_foldcluster_mnorm_D_arma, 3},
     {"_foldcluster_unorm_D_arma", (DL_FUNC) &_foldcluster_unorm_D_arma, 2},
-    {"_foldcluster_makeHellingerAvg", (DL_FUNC) &_foldcluster_makeHellingerAvg, 3},
-    {"_foldcluster_makeuHellingerAvg", (DL_FUNC) &_foldcluster_makeuHellingerAvg, 2},
+    {"_foldcluster_makeJensenShannonAvg", (DL_FUNC) &_foldcluster_makeJensenShannonAvg, 3},
+    {"_foldcluster_makeuJensenShannonAvg", (DL_FUNC) &_foldcluster_makeuJensenShannonAvg, 2},
     {"_foldcluster_risk_cpp", (DL_FUNC) &_foldcluster_risk_cpp, 3},
     {"_foldcluster_rand_index", (DL_FUNC) &_foldcluster_rand_index, 2},
     {"_foldcluster_minimize_risk_cpp", (DL_FUNC) &_foldcluster_minimize_risk_cpp, 3},
@@ -212,7 +182,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_foldcluster_maketau", (DL_FUNC) &_foldcluster_maketau, 4},
     {"_foldcluster_makeutau", (DL_FUNC) &_foldcluster_makeutau, 4},
     {"_foldcluster_lmaketau", (DL_FUNC) &_foldcluster_lmaketau, 4},
-    {"_foldcluster_makeJensenShannonAvg", (DL_FUNC) &_foldcluster_makeJensenShannonAvg, 3},  // Add JSD function here
     {NULL, NULL, 0}
 };
 
