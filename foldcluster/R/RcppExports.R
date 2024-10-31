@@ -9,12 +9,12 @@ unorm_D_arma <- function(mu, sigma) {
     .Call('_foldcluster_unorm_D_arma', PACKAGE = 'foldcluster', mu, sigma)
 }
 
-makeHellingerAvg <- function(theta, d, n) {
-    .Call('_foldcluster_makeHellingerAvg', PACKAGE = 'foldcluster', theta, d, n)
+makeJensenShannonAvg <- function(theta, d, n) {
+    .Call('_foldcluster_makeJensenShannonAvg', PACKAGE = 'foldcluster', theta, d, n)
 }
 
-makeuHellingerAvg <- function(theta, n) {
-    .Call('_foldcluster_makeuHellingerAvg', PACKAGE = 'foldcluster', theta, n)
+makeuJensenShannonAvg <- function(theta, n) {
+    .Call('_foldcluster_makeuJensenShannonAvg', PACKAGE = 'foldcluster', theta, n)
 }
 
 risk_cpp <- function(c, Delta, omega) {
