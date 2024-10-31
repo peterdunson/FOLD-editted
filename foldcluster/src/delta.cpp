@@ -33,12 +33,25 @@ arma::vec makeSigmaDet(arma::cube Sigma, int n) {
 
 // Helper function for Jensen-Shannon Divergence between two probability vectors
 double jsd(const arma::vec& P, const arma::vec& Q) {
+  // Check if any elements in P or Q are NA, NaN, or Inf
+  if (!arma::is_finite(P).min() || !arma::is_finite(Q).min()) {
+    Rcpp::Rcerr << "NA/NaN/Inf value found in input vectors P or Q" << std::endl;
+    return NA_REAL; // Return NA to indicate an error
+  }
+
   arma::vec M = 0.5 * (P + Q);
-  double KLD_PM = arma::accu(P % (arma::log(P + 1e-10) - arma::log(M + 1e-10)));
-  double KLD_QM = arma::accu(Q % (arma::log(Q + 1e-10) - arma::log(M + 1e-10)));
+
+  // Small constant to avoid log(0)
+  double epsilon = 1e-10;
+
+  double KLD_PM = arma::accu(P % (arma::log(P + epsilon) - arma::log(M + epsilon)));
+  double KLD_QM = arma::accu(Q % (arma::log(Q + epsilon) - arma::log(M + epsilon)));
+
   if (!arma::is_finite(KLD_PM) || !arma::is_finite(KLD_QM)) {
     Rcpp::Rcerr << "NA/NaN/Inf value found in KLD calculation" << std::endl;
+    return NA_REAL; // Return NA to indicate an error
   }
+
   return 0.5 * (KLD_PM + KLD_QM);
 }
 
@@ -122,4 +135,3 @@ arma::vec makeuJensenShannonAvg(arma::cube theta, int n) {
   jsd_avg /= S;
   return(jsd_avg);
 }
-
