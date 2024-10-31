@@ -13,29 +13,20 @@ comp_delta <- function(theta, p, n) {
   if (is.list(theta)) {
     theta <- array(unlist(theta), dim = c(n, 2 * p + choose(p, 2), length(theta)))
   }
-  
-  # Check for NA values in theta
-  if (any(is.na(theta))) stop("NA values found in theta after reshaping")
-  
+
   # Initialize Delta matrix
   Delta <- matrix(0, nrow = n, ncol = n)
-  
+
   # Compute JSD values based on dimension p
   if (p == 1) {
     Delta[upper.tri(Delta)] <- makeuJensenShannonAvg(theta = theta, n = n)
   } else {
     Delta[upper.tri(Delta)] <- makeJensenShannonAvg(theta = theta, d = p, n = n)
   }
-  
-  # Check for NA values in Delta after computing JSD values
-  if (any(is.na(Delta))) stop("NA values found in Delta after computing JSD values")
-  
+
   # Make Delta symmetric
   Delta <- Delta + t(Delta)
-  
-  # Check for NA values in Delta after making it symmetric
-  if (any(is.na(Delta))) stop("NA values found in Delta after making it symmetric")
-  
+
   return(Delta)
 }
 
