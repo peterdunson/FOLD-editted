@@ -24,6 +24,9 @@ arma::vec makeSigmaDet(arma::cube Sigma, int n) {
   arma::vec dt = arma::zeros(n);
   for (int i = 0; i < n; i++) {
     dt(i) = exp(0.25 * arma::log_det_sympd(Sigma.slice(i)));
+    if (!arma::is_finite(dt(i))) {
+      Rcpp::Rcerr << "NA/NaN/Inf value found in determinant calculation for slice " << i << std::endl;
+    }
   }
   return(dt);
 }
@@ -33,6 +36,9 @@ double jsd(const arma::vec& P, const arma::vec& Q) {
   arma::vec M = 0.5 * (P + Q);
   double KLD_PM = arma::accu(P % (arma::log(P + 1e-10) - arma::log(M + 1e-10)));
   double KLD_QM = arma::accu(Q % (arma::log(Q + 1e-10) - arma::log(M + 1e-10)));
+  if (!arma::is_finite(KLD_PM) || !arma::is_finite(KLD_QM)) {
+    Rcpp::Rcerr << "NA/NaN/Inf value found in KLD calculation" << std::endl;
+  }
   return 0.5 * (KLD_PM + KLD_QM);
 }
 
@@ -47,6 +53,9 @@ arma::mat mnorm_D_arma(arma::mat mu, arma::mat Sig_diag, arma::mat Sig_LT) {
       arma::vec P = mu.row(i).t();
       arma::vec Q = mu.row(j).t();
       D(i, j) = D(j, i) = sqrt(jsd(P, Q)); // Calculate Jensen-Shannon Distance
+      if (!arma::is_finite(D(i, j))) {
+        Rcpp::Rcerr << "NA/NaN/Inf value found in JSD calculation for indices " << i << ", " << j << std::endl;
+      }
     }
   }
   return(D);
@@ -62,6 +71,9 @@ arma::mat unorm_D_arma(arma::vec mu, arma::vec sigma) {
       arma::vec P = {mu(i), sigma(i)};
       arma::vec Q = {mu(j), sigma(j)};
       D(i, j) = D(j, i) = sqrt(jsd(P, Q)); // Calculate Jensen-Shannon Distance
+      if (!arma::is_finite(D(i, j))) {
+        Rcpp::Rcerr << "NA/NaN/Inf value found in JSD calculation for indices " << i << ", " << j << std::endl;
+      }
     }
   }
   return(D);
