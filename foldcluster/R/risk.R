@@ -1,11 +1,11 @@
-#' Expected Jensen-Shannon Divergence matrix
+#' Expected Jensen-Shannon Distance matrix
 #'
-#' Computes the posterior expected Jensen-Shannon Divergence (JSD) matrix for all localized densities.
+#' Computes the posterior expected Jensen-Shannon Distance (JSD) matrix for all localized densities.
 #' @param theta List of samples from the localized atoms in a GMM. Each item in the list is an MCMC sample of the localized atoms for the data.
 #' @param p Dimension of the data.
 #' @param n Sample size, number of objects to cluster.
 #' @importFrom Rcpp sourceCpp
-#' @return An \code{n}x\code{n} symmetric matrix of the pairwise expected JSD for all objects.
+#' @return An \code{n}x\code{n} symmetric matrix of the pairwise expected Jensen-Shannon Distance for all objects.
 #' @export
 #' @useDynLib foldcluster
 comp_delta <- function(theta, p, n) {
@@ -13,6 +13,9 @@ comp_delta <- function(theta, p, n) {
   if (is.list(theta)) {
     theta <- array(unlist(theta), dim = c(n, 2 * p + choose(p, 2), length(theta)))
   }
+  
+  # Check for NA values in theta
+  if (any(is.na(theta))) stop("NA values found in theta after reshaping")
   
   # Initialize Delta matrix
   Delta <- matrix(0, nrow = n, ncol = n)
@@ -24,8 +27,14 @@ comp_delta <- function(theta, p, n) {
     Delta[upper.tri(Delta)] <- makeJensenShannonAvg(theta = theta, d = p, n = n)
   }
   
+  # Check for NA values in Delta after computing JSD values
+  if (any(is.na(Delta))) stop("NA values found in Delta after computing JSD values")
+  
   # Make Delta symmetric
   Delta <- Delta + t(Delta)
+  
+  # Check for NA values in Delta after making it symmetric
+  if (any(is.na(Delta))) stop("NA values found in Delta after making it symmetric")
   
   return(Delta)
 }
@@ -34,7 +43,7 @@ comp_delta <- function(theta, p, n) {
 #'
 #' Computes the risk of any clustering according to the FOLD loss.
 #' @param c A vector of cluster labels with length \code{n}.
-#' @param Delta An \code{n}x\code{n} symmetric matrix of pairwise expected Jensen-Shannon Divergences.
+#' @param Delta An \code{n}x\code{n} symmetric matrix of pairwise expected Jensen-Shannon Distances.
 #' @param omega FOLD separation parameter, positive.
 #' @importFrom Rcpp sourceCpp
 #' @return The risk of the supplied clustering.
@@ -48,7 +57,7 @@ fold_risk <- function(c, Delta, omega) {
 #'
 #' Minimizes the FOLD risk function over a matrix of clusterings.
 #' @param c A matrix, each row is a vector of cluster labels.
-#' @param Delta An \code{n}x\code{n} symmetric matrix of pairwise expected Jensen-Shannon Divergences.
+#' @param Delta An \code{n}x\code{n} symmetric matrix of pairwise expected Jensen-Shannon Distances.
 #' @param omega FOLD separation parameter, positive.
 #' @importFrom Rcpp sourceCpp
 #' @return A vector, the clustering which minimizes the FOLD risk.
