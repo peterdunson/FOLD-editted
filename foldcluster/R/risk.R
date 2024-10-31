@@ -9,14 +9,24 @@
 #' @export
 #' @useDynLib foldcluster
 comp_delta <- function(theta, p, n) {
-  theta <- array(unlist(theta), dim = c(n, 2*p + choose(p,2), length(theta))) # mean, covariance diagonal, covariance upper triangle
-  Delta <- matrix(0, nrow = n, ncol = n)
-  if (p == 1) {
-    Delta[upper.tri(Delta)] <- makeuJensenShannonAvg(theta=theta, n=n)
-  } else {
-    Delta[upper.tri(Delta)] <- makeJensenShannonAvg(theta=theta, d=p, n=n)
+  # Reshape theta to a 3D array if it's currently a list of matrices
+  if (is.list(theta)) {
+    theta <- array(unlist(theta), dim = c(n, 2 * p + choose(p, 2), length(theta)))
   }
+  
+  # Initialize Delta matrix
+  Delta <- matrix(0, nrow = n, ncol = n)
+  
+  # Compute JSD values based on dimension p
+  if (p == 1) {
+    Delta[upper.tri(Delta)] <- makeuJensenShannonAvg(theta = theta, n = n)
+  } else {
+    Delta[upper.tri(Delta)] <- makeJensenShannonAvg(theta = theta, d = p, n = n)
+  }
+  
+  # Make Delta symmetric
   Delta <- Delta + t(Delta)
+  
   return(Delta)
 }
 
