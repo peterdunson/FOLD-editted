@@ -24,8 +24,18 @@ comp_delta <- function(theta, p, n) {
     Delta[upper.tri(Delta)] <- makeJensenShannonAvg(theta = theta, d = p, n = n)
   }
 
+  # Check for NA/NaN/Inf values in Delta
+  if (any(is.na(Delta)) || any(is.nan(Delta)) || any(is.infinite(Delta))) {
+    warning("NA/NaN/Inf values found in Delta after computing JSD values")
+  }
+
   # Make Delta symmetric
   Delta <- Delta + t(Delta)
+
+  # Check for NA/NaN/Inf values in Delta after making it symmetric
+  if (any(is.na(Delta)) || any(is.nan(Delta)) || any(is.infinite(Delta))) {
+    warning("NA/NaN/Inf values found in Delta after making it symmetric")
+  }
 
   return(Delta)
 }
